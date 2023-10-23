@@ -137,6 +137,7 @@ function App() {
 							type="text"
 							placeholder="John"
 						/>
+						<br />
 						<Button type="submit">Enter</Button>
 					</Form>
 				</>
