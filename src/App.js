@@ -3,11 +3,10 @@ import React, { useState, useEffect } from 'react';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import Table from 'react-bootstrap/Table';
-import { createClient } from '@supabase/supabase-js';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import ButtonToolbar from 'react-bootstrap/ButtonToolbar';
 
-// firebase
+// Firebase imports
 import { initializeApp } from "firebase/app";
 import {
 	getFirestore,
@@ -17,17 +16,11 @@ import {
 	getDocs,
 	updateDoc,
 	query,
-	where,
 	onSnapshot
 } from "firebase/firestore";
-import { getAnalytics } from "firebase/analytics";
 
 
 function App() {
-
-	const supabaseUrl = process.env.REACT_APP_SUPABASE_URL
-	const supabaseKey = process.env.REACT_APP_SUPABASE_KEY
-	const supabase = createClient(supabaseUrl, supabaseKey)
 
 	const firebaseConfig = {
 		apiKey: process.env.REACT_APP_FIREBASE_KEY,
@@ -45,15 +38,15 @@ function App() {
 
 	useEffect(() => {
 
+		// Realtime listerner for poker table
 		const pokerQuery = query(collection(db, "poker"));
 		const unsubscribePoker = onSnapshot(pokerQuery, (querySnapshot) => {
-			const data = [];
 			fetchData()
 		});
 
+		// Realtime listerner for show table
 		const showQuery = query(collection(db, "show"));
 		const unsubscribeShow = onSnapshot(showQuery, (querySnapshot) => {
-			const data = [];
 			fetchShow()
 		});
 
@@ -103,19 +96,18 @@ function App() {
 		});
 		setTable(dataArr)
 		setFsid(fid)
-		console.log(fid)
 		calcAvg(dataArr)
 	}
 
 	function calcAvg(poker) {
-		if (poker.length == 0) {
+		if (poker.length === 0) {
 			setAverage(0)
 		}
 		else {
 			var sum = 0
 			var zeroCount = 0
 			poker.forEach((item, index) => {
-				if (item['points'] == 0) {
+				if (item['points'] === 0) {
 					zeroCount = zeroCount + 1;
 				} else {
 					sum = sum + parseInt(item['points'])
@@ -185,19 +177,19 @@ function App() {
 						<br />
 						<ButtonToolbar aria-label="Toolbar with button groups">
 							<ButtonGroup className="me-2" aria-label="First group">
-								<Button onClick={() => updatePoint(1)} variant={point == 1 ? "primary" : "light"}>1</Button>
+								<Button onClick={() => updatePoint(1)} variant={point === 1 ? "primary" : "light"}>1</Button>
 							</ButtonGroup>
 							<ButtonGroup className="me-2" aria-label="First group">
-								<Button onClick={() => updatePoint(2)} variant={point == 2 ? "primary" : "light"}>2</Button>
+								<Button onClick={() => updatePoint(2)} variant={point === 2 ? "primary" : "light"}>2</Button>
 							</ButtonGroup>
 							<ButtonGroup className="me-2" aria-label="First group">
-								<Button onClick={() => updatePoint(3)} variant={point == 3 ? "primary" : "light"}>3</Button>
+								<Button onClick={() => updatePoint(3)} variant={point === 3 ? "primary" : "light"}>3</Button>
 							</ButtonGroup>
 							<ButtonGroup className="me-2" aria-label="First group">
-								<Button onClick={() => updatePoint(4)} variant={point == 4 ? "primary" : "light"}>4</Button>
+								<Button onClick={() => updatePoint(4)} variant={point === 4 ? "primary" : "light"}>4</Button>
 							</ButtonGroup>
 							<ButtonGroup className="me-2" aria-label="First group">
-								<Button onClick={() => updatePoint(5)} variant={point == 5 ? "primary" : "light"}>5</Button>
+								<Button onClick={() => updatePoint(5)} variant={point === 5 ? "primary" : "light"}>5</Button>
 							</ButtonGroup>
 						</ButtonToolbar>
 						<br />
@@ -207,7 +199,7 @@ function App() {
 							<thead>
 								<tr>
 									<th>Name</th>
-									<th>Points  <Button onClick={() => updateShow()}>{show == true ? "Hide" : "Show"}</Button></th>
+									<th>Points  <Button onClick={() => updateShow()}>{show === true ? "Hide" : "Show"}</Button></th>
 								</tr>
 							</thead>
 							{table.map((item) => {
@@ -215,7 +207,7 @@ function App() {
 									<tbody>
 										<tr>
 											<td>
-												{item['name'] == username ?
+												{item['name'] === username ?
 													<span style={{ paddingRight: '10px' }}>
 														<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
 															<path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
@@ -226,8 +218,8 @@ function App() {
 												{item['name']}
 											</td>
 											<td>
-												{show == true ? <> {item['points'] == 0 ? '' : item['points']}</> : "Hidden"} {''}
-												{item['points'] != 0 ?
+												{show === true ? <> {item['points'] === 0 ? '' : item['points']}</> : "Hidden"} {''}
+												{item['points'] !== 0 ?
 													<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="green" className="bi bi-check-circle-fill" viewBox="0 0 16 16">
 														<path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
 													</svg>
@@ -239,9 +231,8 @@ function App() {
 								)
 							})}
 						</Table>
-						{console.log(table)}
 						<br />
-						<h3>Average: {show == true ? average : 'Hidden'}</h3>
+						<h3>Average: {show === true ? average : 'Hidden'}</h3>
 					</>
 				}
 			</header>
