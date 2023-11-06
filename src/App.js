@@ -63,7 +63,8 @@ function App() {
 	const [table, setTable] = useState([]);
 	const [show, setShow] = useState(false);
 	const [fsId, setFsid] = useState([]);
-	
+	const [admin, setAdmin] = useState(0);
+
 
 	const handleSubmit = async e => {
 		e.preventDefault()
@@ -72,9 +73,25 @@ function App() {
 		setUsername(formDataObj['username'])
 		setSprint(formDataObj['sprint'])
 
+		var t_admin = 0;
+		const querySnapshot = await getDocs(collection(db, formDataObj['sprint']));
+		if (querySnapshot.size === 0) {
+			t_admin = 1
+		}
+		else {
+			querySnapshot.forEach((doc) => {
+				if (doc.data()['name'] === formDataObj['username']) {
+					t_admin = doc.data()['admin'];
+				}
+			});
+		}
+
+		setAdmin(t_admin);
+
 		const data = {
 			name: formDataObj['username'],
-			points: point
+			points: point,
+			admin: t_admin
 		}
 		await setDoc(doc(db, formDataObj['sprint'], formDataObj['username']), data);
 		setSubmit(1)
@@ -204,13 +221,13 @@ function App() {
 							</ButtonGroup>
 						</ButtonToolbar>
 						<br />
-						<Button onClick={() => clearAll()} variant='warning'>Clear All</Button>
+						{admin === 1 ? <Button onClick={() => clearAll()} variant='warning'>Clear All</Button> : ''}
 						<br />
 						<Table striped bordered hover variant="dark">
 							<thead>
 								<tr>
 									<th>Name</th>
-									<th>Points  <Button onClick={() => updateShow()}>{show === true ? "Hide" : "Show"}</Button></th>
+									<th>Points  {admin === 1 ? <Button onClick={() => updateShow()}>{show === true ? "Hide" : "Show"}</Button> : ''}</th>
 								</tr>
 							</thead>
 							{table.map((item) => {
