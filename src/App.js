@@ -38,12 +38,6 @@ function App() {
 
 	useEffect(() => {
 
-		// Realtime listerner for poker table
-		const pokerQuery = query(collection(db, "poker"));
-		const unsubscribePoker = onSnapshot(pokerQuery, (querySnapshot) => {
-			fetchData()
-		});
-
 		// Realtime listerner for show table
 		const showQuery = query(collection(db, "show"));
 		const unsubscribeShow = onSnapshot(showQuery, (querySnapshot) => {
@@ -62,34 +56,40 @@ function App() {
 	}, []);
 
 	const [username, setUsername] = useState('');
+	const [sprint, setSprint] = useState('initial_sprint');
 	const [submit, setSubmit] = useState(0);
 	const [point, setPoint] = useState(0);
 	const [average, setAverage] = useState(0);
 	const [table, setTable] = useState([]);
 	const [show, setShow] = useState(false);
 	const [fsId, setFsid] = useState([]);
+	
 
 	const handleSubmit = async e => {
 		e.preventDefault()
 		const formData = new FormData(e.target)
 		const formDataObj = Object.fromEntries(formData.entries())
 		setUsername(formDataObj['username'])
+		setSprint(formDataObj['sprint'])
 
 		const data = {
 			name: formDataObj['username'],
 			points: point
 		}
-		await setDoc(doc(db, "poker", formDataObj['username']), data);
-
-		fetchData()
+		await setDoc(doc(db, formDataObj['sprint'], formDataObj['username']), data);
 		setSubmit(1)
+
+		// Realtime listerner for poker table
+		const pokerQuery = query(collection(db, formDataObj['sprint']));
+		const unsubscribePoker = onSnapshot(pokerQuery, (querySnapshot) => {
+			fetchData(formDataObj['sprint'])
+		});
 	}
 
-	async function fetchData() {
-
+	async function fetchData(sprint_name) {
 		const dataArr = []
 		const fid = []
-		const querySnapshot = await getDocs(collection(db, "poker"));
+		const querySnapshot = await getDocs(collection(db, sprint_name));
 		querySnapshot.forEach((doc) => {
 			dataArr.push(doc.data());
 			fid.push(doc.id);
@@ -119,7 +119,7 @@ function App() {
 	}
 
 	const updatePoint = async p => {
-		const userDocRef = doc(db, "poker", username);
+		const userDocRef = doc(db, sprint, username);
 		await updateDoc(userDocRef, {
 			points: p
 		});
@@ -144,13 +144,17 @@ function App() {
 
 	const clearAll = async e => {
 		fsId.forEach(async (id) => {
-			const userDocRef = doc(db, "poker", id);
+			const userDocRef = doc(db, sprint, id);
 			await updateDoc(userDocRef, {
 				points: 0
 			});
 		})
 		setPoint(0);
 		hideShow();
+	}
+
+	const exit = async e => {
+		setSubmit(0);
 	}
 
 
@@ -162,19 +166,26 @@ function App() {
 					<p>Scrum Poker</p>
 					<br />
 					<Form onSubmit={handleSubmit}>
-						<Form.Label>What should I call you?</Form.Label>
+						<Form.Label>Enter Sprint</Form.Label>
+						<Form.Control
+							name="sprint"
+							type="text"
+							placeholder="Sprint name (Ex. Sprint 60)"
+						/>
+						<br />
 						<Form.Control
 							name="username"
 							type="text"
-							placeholder="John"
+							placeholder="Your name (Ex. John)"
 						/>
 						<br />
 						<Button type="submit">Enter</Button>
 					</Form>
 				</>
 					: <>
-						<h1>Hello {username}</h1>
+						<h1>{sprint} <Button onClick={() => exit()} variant='danger'>Exit</Button></h1>
 						<br />
+						<p>Hello {username}</p>
 						<ButtonToolbar aria-label="Toolbar with button groups">
 							<ButtonGroup className="me-2" aria-label="First group">
 								<Button onClick={() => updatePoint(1)} variant={point === 1 ? "primary" : "light"}>1</Button>
@@ -193,7 +204,7 @@ function App() {
 							</ButtonGroup>
 						</ButtonToolbar>
 						<br />
-						<Button onClick={() => clearAll()} variant='danger'>Clear All</Button>
+						<Button onClick={() => clearAll()} variant='warning'>Clear All</Button>
 						<br />
 						<Table striped bordered hover variant="dark">
 							<thead>
@@ -209,9 +220,9 @@ function App() {
 											<td>
 												{item['name'] === username ?
 													<span style={{ paddingRight: '10px' }}>
-														<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+														<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" className="bi bi-person-circle" viewBox="0 0 16 16">
 															<path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
-															<path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z" />
+															<path fillRule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z" />
 														</svg>
 													</span>
 													: ''}
