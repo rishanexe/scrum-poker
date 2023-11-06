@@ -235,7 +235,7 @@ function App() {
 									<tbody>
 										<tr>
 											<td>
-												{item['name'] === username ?
+												{item['admin'] === 1 ?
 													<span style={{ paddingRight: '10px' }}>
 														<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" className="bi bi-person-circle" viewBox="0 0 16 16">
 															<path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
@@ -244,6 +244,7 @@ function App() {
 													</span>
 													: ''}
 												{item['name']}
+												{item['name'] === username ? ' (You)' : ''}
 											</td>
 											<td>
 												{show === true ? <> {item['points'] === 0 ? '' : item['points']}</> : "Hidden"} {''}
