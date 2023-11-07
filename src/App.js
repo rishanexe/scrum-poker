@@ -251,21 +251,21 @@ function App() {
 							</Form>
 						</>
 						: <>
-							<h1>Agilemate</h1>
+							<h1 className="text-info">Agilemate</h1>
 							<p>Scrum Poker</p>
 							<br />
 							<Form onSubmit={handleSubmit}>
-								<Form.Label>Enter Sprint</Form.Label>
+								<Form.Label>Enter Lobby</Form.Label>
 								<Form.Control
 									name="sprint"
 									type="text"
-									placeholder="Sprint name (Ex. Sprint 60)"
+									placeholder="Lobby name (Sprint 61)"
 								/>
 								<br />
 								<Form.Control
 									name="username"
 									type="text"
-									placeholder="Your name (Ex. John)"
+									placeholder="Your name (John)"
 								/>
 								<br />
 								<Button type="submit">Enter</Button>
@@ -340,6 +340,7 @@ function App() {
 						<h3>Average: {show === true ? average : 'Hidden'}</h3>
 					</>
 				}
+				<p style={{ fontSize: "15px", marginTop: "10%" }}>Developed by <span className="text-info"><b>Rishan</b></span></p>
 			</header>
 		</div>
 	);
