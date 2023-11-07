@@ -11,6 +11,7 @@ import { initializeApp } from "firebase/app";
 import {
 	getFirestore,
 	doc,
+	getDoc,
 	setDoc,
 	collection,
 	getDocs,
@@ -38,6 +39,18 @@ function App() {
 
 	useEffect(() => {
 
+		async function fetchSprint(docName) {
+			const docSnap = await getDoc(doc(db, "sprint_mapping", docName));
+			setSprint(docSnap.data()['sprint']);
+		}
+		const windowUrl = window.location.search;
+		const params = new URLSearchParams(windowUrl);
+		if (params.get('s') !== null) {
+			setCode(params.get('s'));
+			fetchSprint(params.get('s'))
+			setUrl('https://agilemate.onrender.com/?s=' + params.get('s'));
+		}
+
 		// Realtime listerner for show table
 		const showQuery = query(collection(db, "show"));
 		const unsubscribeShow = onSnapshot(showQuery, (querySnapshot) => {
@@ -57,6 +70,8 @@ function App() {
 
 	const [username, setUsername] = useState('');
 	const [sprint, setSprint] = useState('initial_sprint');
+	const [url, setUrl] = useState('https://agilemate.onrender.com/');
+	const [code, setCode] = useState('');
 	const [submit, setSubmit] = useState(0);
 	const [point, setPoint] = useState(0);
 	const [average, setAverage] = useState(0);
@@ -64,7 +79,6 @@ function App() {
 	const [show, setShow] = useState(false);
 	const [fsId, setFsid] = useState([]);
 	const [admin, setAdmin] = useState(0);
-
 
 	const handleSubmit = async e => {
 		e.preventDefault()
@@ -76,7 +90,11 @@ function App() {
 		var t_admin = 0;
 		const querySnapshot = await getDocs(collection(db, formDataObj['sprint']));
 		if (querySnapshot.size === 0) {
-			t_admin = 1
+			t_admin = 1;
+			var lobbyId = Math.random().toString(36).substring(2, 10);
+			setCode(lobbyId);
+			setUrl('https://agilemate.onrender.com/?s=' + lobbyId);
+			await setDoc(doc(db, 'sprint_mapping', lobbyId), { sprint: formDataObj['sprint'] });
 		}
 		else {
 			querySnapshot.forEach((doc) => {
@@ -100,6 +118,42 @@ function App() {
 		const pokerQuery = query(collection(db, formDataObj['sprint']));
 		const unsubscribePoker = onSnapshot(pokerQuery, (querySnapshot) => {
 			fetchData(formDataObj['sprint'])
+		});
+	}
+
+	const handleLobbySubmit = async e => {
+		e.preventDefault()
+		const formData = new FormData(e.target)
+		const formDataObj = Object.fromEntries(formData.entries())
+		setUsername(formDataObj['username'])
+
+		var t_admin = 0;
+		const querySnapshot = await getDocs(collection(db, sprint));
+		if (querySnapshot.size === 0) {
+			t_admin = 1
+		}
+		else {
+			querySnapshot.forEach((doc) => {
+				if (doc.data()['name'] === formDataObj['username']) {
+					t_admin = doc.data()['admin'];
+				}
+			});
+		}
+
+		setAdmin(t_admin);
+
+		const data = {
+			name: formDataObj['username'],
+			points: point,
+			admin: t_admin
+		}
+		await setDoc(doc(db, sprint, formDataObj['username']), data);
+		setSubmit(1)
+
+		// Realtime listerner for poker table
+		const pokerQuery = query(collection(db, sprint));
+		const unsubscribePoker = onSnapshot(pokerQuery, (querySnapshot) => {
+			fetchData(sprint)
 		});
 	}
 
@@ -178,32 +232,54 @@ function App() {
 	return (
 		<div className="App">
 			<header className="App-header">
-				{submit === 0 ? <>
-					<h1>Agilemate</h1>
-					<p>Scrum Poker</p>
-					<br />
-					<Form onSubmit={handleSubmit}>
-						<Form.Label>Enter Sprint</Form.Label>
-						<Form.Control
-							name="sprint"
-							type="text"
-							placeholder="Sprint name (Ex. Sprint 60)"
-						/>
-						<br />
-						<Form.Control
-							name="username"
-							type="text"
-							placeholder="Your name (Ex. John)"
-						/>
-						<br />
-						<Button type="submit">Enter</Button>
-					</Form>
-				</>
+				{submit === 0 ?
+					code.match(/^[0-9a-z]+$/) ?
+						<>
+							<h1>Agilemate</h1>
+							<p>Scrum Poker</p>
+							<br />
+							<Form onSubmit={handleLobbySubmit}>
+								<h3>Lobby: {sprint}</h3>
+								<br />
+								<Form.Control
+									name="username"
+									type="text"
+									placeholder="Your name (Ex. John)"
+								/>
+								<br />
+								<Button type="submit">Enter</Button>
+							</Form>
+						</>
+						: <>
+							<h1>Agilemate</h1>
+							<p>Scrum Poker</p>
+							<br />
+							<Form onSubmit={handleSubmit}>
+								<Form.Label>Enter Sprint</Form.Label>
+								<Form.Control
+									name="sprint"
+									type="text"
+									placeholder="Sprint name (Ex. Sprint 60)"
+								/>
+								<br />
+								<Form.Control
+									name="username"
+									type="text"
+									placeholder="Your name (Ex. John)"
+								/>
+								<br />
+								<Button type="submit">Enter</Button>
+							</Form>
+						</>
 					: <>
+						<p style={{ fontSize: "20px" }}>Invite: <a href={url} target="_blank">{url}</a></p>
 						<h1>{sprint} <Button onClick={() => exit()} variant='danger'>Exit</Button></h1>
 						<br />
 						<p>Hello {username}</p>
 						<ButtonToolbar aria-label="Toolbar with button groups">
+							<ButtonGroup className="me-2" aria-label="First group">
+								<Button onClick={() => updatePoint(0)} variant={point === 0 ? "primary" : "light"}>Clear</Button>
+							</ButtonGroup>
 							<ButtonGroup className="me-2" aria-label="First group">
 								<Button onClick={() => updatePoint(1)} variant={point === 1 ? "primary" : "light"}>1</Button>
 							</ButtonGroup>
