@@ -17,6 +17,7 @@ import {
 	getDocs,
 	updateDoc,
 	query,
+	where,
 	onSnapshot
 } from "firebase/firestore";
 
@@ -102,6 +103,13 @@ function App() {
 					t_admin = doc.data()['admin'];
 				}
 			});
+
+			const sprintCodeSnap = await getDocs(query(collection(db, "sprint_mapping"), where("sprint", "==", formDataObj['sprint'])));
+			sprintCodeSnap.forEach((sp_code) => {
+				var lobbyId = sp_code.id
+				setCode(lobbyId)
+				setUrl('https://agilemate.onrender.com/?s=' + lobbyId);
+			})
 		}
 
 		setAdmin(t_admin);
@@ -184,7 +192,7 @@ function App() {
 					sum = sum + parseInt(item['points'])
 				}
 			})
-			const average = Math.round(sum / (poker.length - zeroCount));
+			const average = (sum / (poker.length - zeroCount)).toFixed(2);
 			setAverage(average);
 		}
 	}
