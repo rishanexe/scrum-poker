@@ -96,6 +96,7 @@ function App() {
 			setCode(lobbyId);
 			setUrl('https://agilemate.onrender.com/?s=' + lobbyId);
 			await setDoc(doc(db, 'sprint_mapping', lobbyId), { sprint: formDataObj['sprint'] });
+			window.history.replaceState(null, "", "?s=" + lobbyId)
 		}
 		else {
 			querySnapshot.forEach((doc) => {
@@ -247,7 +248,7 @@ function App() {
 							<p>Scrum Poker</p>
 							<br />
 							<Form onSubmit={handleLobbySubmit}>
-								<h3>Lobby: {sprint}</h3>
+								<h3>Session: {sprint}</h3>
 								<br />
 								<Form.Control
 									name="username"
@@ -263,11 +264,11 @@ function App() {
 							<p>Scrum Poker</p>
 							<br />
 							<Form onSubmit={handleSubmit}>
-								<Form.Label>Enter Lobby</Form.Label>
+								<Form.Label>Create session</Form.Label>
 								<Form.Control
 									name="sprint"
 									type="text"
-									placeholder="Lobby name (Sprint 61)"
+									placeholder="Session name (Sprint 61)"
 								/>
 								<br />
 								<Form.Control
@@ -311,7 +312,7 @@ function App() {
 							<thead>
 								<tr>
 									<th>Name</th>
-									<th>Points  {admin === 1 ? <Button onClick={() => updateShow()}>{show === true ? "Hide" : "Show"}</Button> : ''}</th>
+									<th>Points &nbsp; {admin === 1 ? <Button onClick={() => updateShow()}>{show === true ? "Hide all" : "Show all"}</Button> : ''}</th>
 								</tr>
 							</thead>
 							{table.map((item) => {
