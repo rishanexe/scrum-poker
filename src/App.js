@@ -110,6 +110,7 @@ function App() {
 				var lobbyId = sp_code.id
 				setCode(lobbyId)
 				setUrl('https://agilemate.onrender.com/?s=' + lobbyId);
+				window.history.replaceState(null, "", "?s=" + lobbyId)
 			})
 		}
 
@@ -308,7 +309,7 @@ function App() {
 						<br />
 						{admin === 1 ? <Button onClick={() => clearAll()} variant='warning'>Clear All</Button> : ''}
 						<br />
-						<Table striped bordered hover variant="dark">
+						<Table striped bordered hover variant="dark" style={{ "width": "50%" }}>
 							<thead>
 								<tr>
 									<th>Name</th>
@@ -328,8 +329,7 @@ function App() {
 														</svg>
 													</span>
 													: ''}
-												{item['name']}
-												{item['name'] === username ? ' (You)' : ''}
+												<span className={item['name'] === username ? "text-info" : ""}>{item['name']}</span>
 											</td>
 											<td>
 												{show === true ? <> {item['points'] === 0 ? '' : item['points']}</> : "Hidden"} {''}
